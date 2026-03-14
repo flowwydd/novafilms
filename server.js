@@ -3,7 +3,7 @@ const path = require('path');
 const fetch = require('node-fetch'); // must be node-fetch v2
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = '3000';
 
 const TMDB_KEY = '2958cf52147b1e175b6e327d9e0c2621';
 
