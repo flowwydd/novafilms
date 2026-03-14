@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaFlix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">N</div>
+        <div class="brand-text">NovaFlix</div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#">Home</a>
+        <a href="#movies">Movies</a>
+        <a href="#series">Series</a>
+        <a href="#trending">Trending</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <div class="search-wrap">
+          <input id="searchInput" type="text" placeholder="Search titles..." />
+        </div>
+        <button class="icon-btn">⌕</button>
+        <button class="profile-chip">DK</button>
+      </div>
+    </header>
+
+    <main>
+<section class="hero">
+  <div class="hero-backdrop" style="
+    background-image: url('https://horror.land/wp-content/uploads/2025/10/Scream-7-Youtube-Video-Trailer-Images-2026-v01.jpg');
+  "></div>
+
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <div class="eyebrow">Featured Now</div>
+
+    <h1 id="heroTitle">Scream 7</h1>
+
+    <div class="hero-meta" id="heroMeta">
+      2026 • Horror • 1h 58m
+    </div>
+
+    <p id="heroDescription">
+      A new Ghostface emerges as past survivors face their darkest chapter yet.
+    </p>
+
+    <div class="hero-actions">
+      <button class="primary-btn" id="heroPlayBtn"
+        onclick="window.location.href='/watch?imdb=tt27047903'">
+        ▶ Watch Now
+      </button>
+
+      <button class="secondary-btn" id="heroInfoBtn">
+        More Info
+      </button>
+    </div>
+  </div>
+</section>
+
+      <section class="section-block" id="trending">
+        <div class="section-header">
+          <h2>Trending Now</h2>
+        </div>
+        <div class="card-row" id="trendingRow"></div>
+      </section>
+
+      <section class="section-block" id="movies">
+        <div class="section-header">
+          <h2>Movies</h2>
+        </div>
+        <div class="poster-grid" id="moviesGrid"></div>
+      </section>
+
+      <section class="section-block" id="series">
+        <div class="section-header">
+          <h2>TV Shows and Series</h2>
+        </div>
+        <div class="poster-grid" id="seriesGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal hidden" id="detailsModal">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card">
+      <button class="modal-close" id="closeModal">✕</button>
+      <div class="modal-hero" id="modalHero"></div>
+      <div class="modal-body">
+        <h3 id="modalTitle"></h3>
+        <p id="modalMeta" class="modal-meta"></p>
+        <p id="modalDescription" class="modal-description"></p>
+        <div class="modal-actions">
+          <a id="modalTrailer" class="primary-btn link-btn" href="#" target="_blank" rel="noreferrer">Watch Now</a>
+          <button class="secondary-btn" id="closeModalBottom">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
