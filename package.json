@@ -1,0 +1,14 @@
+{
+  "name": "flixup-style-ui",
+  "version": "1.0.0",
+  "description": "Flixup-style legal movie browser UI starter",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^4.22.1",
+    "node-fetch": "^2.7.0"
+  }
+}
