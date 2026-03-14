@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NovaFlix - Watch</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0d0d0d;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    #watchLayout {
+      display: flex;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* PLAYER ZONE */
+    #playerZone {
+      flex: 1;
+      position: relative;
+      background: black;
+    }
+
+    #playerContainer {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    #player {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* CENTER PLAY BUTTON */
+    #bigPlayBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: white;
+      padding: 20px 40px;
+      font-size: 32px;
+      border-radius: 12px;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    /* HAMBURGER BUTTON */
+    #hamburger {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 20;
+      font-size: 20px;
+      display: none; /* only for TV shows */
+    }
+
+    /* SIDEBAR */
+    #episodePanel {
+      width: 320px;
+      background: #111;
+      border-left: 1px solid #222;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      transform: translateX(100%);
+    }
+
+    #episodePanel.open {
+      transform: translateX(0);
+    }
+
+    #seasonSelector {
+      width: 100%;
+      padding: 10px;
+      background: #1a1a1a;
+      color: white;
+      border: 1px solid #333;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    #episodeList div {
+      padding: 12px;
+      margin-bottom: 6px;
+      background: #1a1a1a;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    #episodeList div:hover {
+      background: #2a2a2a;
+    }
+
+    #episodeList div.active {
+      background: #333;
+    }
+
+    /* MINIPLAYER */
+    #miniPlayer {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 320px;
+      height: 180px;
+      background: black;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+      z-index: 999;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    #miniFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    #restoreBtn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="watchLayout">
+  <div id="playerZone">
+    <div id="playerContainer">
+      <iframe id="player" allowfullscreen allow="autoplay" referrerpolicy="no-referrer"></iframe>
+
+      <button id="bigPlayBtn">▶ Play</button>
+      <button id="hamburger">☰</button>
+    </div>
+  </div>
+
+  <aside id="episodePanel">
+    <select id="seasonSelector"></select>
+    <div id="episodeList"></div>
+  </aside>
+</div>
+
+<div id="miniPlayer">
+  <iframe id="miniFrame" allowfullscreen allow="autoplay" referrerpolicy="no-referrer"></iframe>
+  <button id="restoreBtn">✕</button>
+</div>
+
+<script>
+  const imdb = new URLSearchParams(window.location.search).get("imdb");
+  if (!imdb) document.body.innerHTML = "<h1 style='padding:40px'>Missing IMDB ID</h1>";
+
+  const player = document.getElementById("player");
+  const bigPlayBtn = document.getElementById("bigPlayBtn");
+  const hamburger = document.getElementById("hamburger");
+  const episodePanel = document.getElementById("episodePanel");
+
+  let showData = null;
+
+  /* DETECT MOVIE OR TV */
+  async function detectType() {
+    const url = `https://api.themoviedb.org/3/find/${imdb}?api_key=2958cf52147b1e175b6e327d9e0c2621&external_source=imdb_id`;
+    const data = await fetch(url).then(r => r.json());
+
+    if (data.movie_results.length > 0) {
+      loadMovie();
+    } else if (data.tv_results.length > 0) {
+      loadShow();
+    } else {
+      document.body.innerHTML = "<h1 style='padding:40px'>Not found</h1>";
+    }
+  }
+
+  detectType();
+
+  /* MOVIE MODE */
+  async function loadMovie() {
+    episodePanel.style.display = "none";
+    hamburger.style.display = "none";
+
+    const movieData = await fetch(`/api/movie/${imdb}`).then(r => r.json());
+
+    bigPlayBtn.onclick = () => {
+      player.src = movieData.src;
+      bigPlayBtn.style.display = "none";
+    };
+  }
+
+  /* TV MODE */
+  async function loadShow() {
+    hamburger.style.display = "block";
+
+    showData = await fetch(`/api/show/${imdb}`).then(r => r.json());
+
+    loadSeasons();
+
+    // Auto-play S1E1
+    player.src = showData.default.src;
+    bigPlayBtn.style.display = "none";
+
+    bigPlayBtn.onclick = () => {
+      player.src = showData.default.src;
+      bigPlayBtn.style.display = "none";
+      highlightEpisode(1);
+    };
+  }
+
+  const seasonSelector = document.getElementById("seasonSelector");
+  const episodeList = document.getElementById("episodeList");
+
+  function loadSeasons() {
+    seasonSelector.innerHTML = "";
+    Object.keys(showData.seasons).forEach(season => {
+      const opt = document.createElement("option");
+      opt.value = season;
+      opt.textContent = `Season ${season}`;
+      seasonSelector.appendChild(opt);
+    });
+    loadEpisodes(seasonSelector.value);
+  }
+
+  function loadEpisodes(season) {
+    episodeList.innerHTML = "";
+    showData.seasons[season].forEach(ep => {
+      const div = document.createElement("div");
+      div.textContent = `Ep ${ep.ep} — ${ep.title}`;
+      div.onclick = () => {
+        player.src = ep.src;
+        bigPlayBtn.style.display = "none";
+        highlightEpisode(ep.ep);
+        episodePanel.classList.remove("open");
+      };
+      episodeList.appendChild(div);
+    });
+  }
+
+  function highlightEpisode(epNum) {
+    document.querySelectorAll("#episodeList div").forEach(div => {
+      div.classList.remove("active");
+      if (div.textContent.startsWith(`Ep ${epNum}`)) div.classList.add("active");
+    });
+  }
+
+  seasonSelector.onchange = () => loadEpisodes(seasonSelector.value);
+
+  /* SIDEBAR TOGGLE */
+  hamburger.onclick = () => {
+    episodePanel.classList.toggle("open");
+  };
+
+  /* MINIPLAYER */
+  const miniPlayer = document.getElementById("miniPlayer");
+  const miniFrame = document.getElementById("miniFrame");
+
+  window.addEventListener("scroll", () => {
+    const rect = player.getBoundingClientRect();
+    if (rect.bottom < 0) {
+      miniPlayer.style.display = "block";
+      miniFrame.src = player.src;
+    } else {
+      miniPlayer.style.display = "none";
+    }
+  });
+
+  document.getElementById("restoreBtn").onclick = () => {
+    miniPlayer.style.display = "none";
+  };
+</script>
+
+</body>
+</html>
